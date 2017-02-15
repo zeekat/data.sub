@@ -45,7 +45,8 @@
   (cond (nil? sub)
         true
         (sequential? sub)
-        (and (<= (count sub)
+        (and (sequential? x)
+             (<= (count sub)
                  (count x))
              (every? (fn [[i el]]
                        (sub? el (nth x i)))
