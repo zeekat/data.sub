@@ -1,5 +1,5 @@
 (ns nl.zeekat.data.sub-test
-  (:require [nl.zeekat.data.sub :refer [sub?]]
+  (:require [nl.zeekat.data.sub :refer [sub? subdiff]]
             [clojure.test :refer [deftest are testing]]))
 
 (deftest test-sub?
@@ -35,8 +35,15 @@
                  [:1 :2 :3]))))
   (testing "incompatible types"
     (are [x y] (not (sub? x y))
-      [:a :b] {:a :b}
-      {:a :b} [:a :b]
-      '(:a :b) {:a :b}
-      
-      )))
+      [:a :b]  {:a :b}
+      {:a :b}  [:a :b]
+      '(:a :b) {:a :b})))
+
+(deftest test-subdiff
+  (testing "sequential items"
+    (are [x] x
+      (= [nil nil nil] (subdiff nil [:a :b :c]))
+      (= [[nil :b] nil [:a]] (subdiff [:a :b] [:a]))
+      (= [[[nil :b] :c] [[nil 1] 2] [[:a]]]  (subdiff [[:a :b] :c] [[:a 1] 2]))
+      (= [{:a [nil :c]} {:a [nil 2]} {:a [:b]}] (subdiff {:a [:b :c]} {:a [:b 2]})))))
+

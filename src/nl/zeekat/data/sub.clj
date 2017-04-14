@@ -1,4 +1,5 @@
-(ns nl.zeekat.data.sub)
+(ns nl.zeekat.data.sub
+  (:require [clojure.data :refer [diff]]))
 
 (defn sub?
   "true if `sub` is either `nil`, equal to `x`, or a recursive
@@ -59,3 +60,99 @@
                 sub)
         :else
         (= sub x)))
+
+(defn- droplast-while
+  [pred x]
+  (when-let [s (seq (reverse (drop-while pred (reverse x))))]
+    (vec s)))
+
+
+(defn- nil-col
+  [c]
+  (if (and (coll? c) (empty? c))
+    nil
+    c))
+
+(declare prune-subdiff)
+
+(defn- prune-subdiff*
+  [x]
+  (cond
+    (sequential? x)
+    (droplast-while nil? (map prune-subdiff x))
+    (map? x)
+    (into (empty x) (remove (fn [[k v]] (nil? v)) x))
+    :else
+    x))
+
+(defn prune-subdiff
+  [x]
+  (-> x
+      prune-subdiff*
+      nil-col))
+
+(defn subdiff-left
+  [sub x]
+  (cond (nil? sub)
+        nil
+        (= sub x)
+        nil
+        (and (sequential? sub) (sequential? x))
+        (->> (map subdiff-left sub (concat x (repeat nil)))
+             prune-subdiff)
+        (and (map? sub) (map? x))
+        (->> (into (empty sub)
+                   (map (fn [[k v-sub]]
+                          [k (subdiff-left v-sub (get x k))])
+                        sub))
+             prune-subdiff)
+        (set? sub)
+        (set (remove #(contains? x %) sub))
+        :else
+        sub))
+
+(defn subdiff-right
+  [sub x]
+  (cond (nil? sub)
+        nil
+        (= sub x)
+        nil
+        (and (sequential? sub) (sequential? x))
+        (->> (mapv subdiff-right sub x)
+             (prune-subdiff))
+        (and (map? sub) (map? x))
+        (->> (into (empty sub)
+                   (map (fn [[k v-sub]]
+                          [k (subdiff-right v-sub (get x k))])
+                        sub))
+             (prune-subdiff))
+        (set? sub)
+        nil
+        :else
+        x))
+
+(defn subdiff-both
+  [sub x]
+  (cond (nil? sub)
+        sub
+        (= sub x)
+        sub
+        (and (sequential? sub) (sequential? x))
+        (->> (mapv subdiff-both sub x)
+             (prune-subdiff))
+        (and (map? sub) (map? x))
+        (->> (into (empty sub)
+                   (map (fn [[k v-sub]]
+                          [k (subdiff-both v-sub (get x k))])
+                        sub))
+             (prune-subdiff))
+        (set? sub)
+        (set (filter #(contains? x %) sub))
+        :else
+        nil))
+
+(defn subdiff
+  [sub x]
+  (if (sub? sub x)
+    [nil nil sub]
+    [(subdiff-left sub x) (subdiff-right sub x) (subdiff-both sub x)]))
