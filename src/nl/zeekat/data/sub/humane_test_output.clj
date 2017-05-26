@@ -13,7 +13,7 @@
                      :expected sub#,  :actual  [x#]})
          (do-report {:type     :fail, :message ~msg,
                      :expected sub#,  :actual  [x#]
-                     :diffs    [[x# (subdiff sub# x#)]]}))
+                     :diffs    [[[x#] (take 2 (subdiff sub# x#))]]}))
        result#)))
 
 (defonce activation-body

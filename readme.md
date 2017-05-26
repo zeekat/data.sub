@@ -13,3 +13,9 @@ To enable this, setup your leiningen profiles.clj or project.clj like:
                        (pjstadig.humane-test-output/activate!)
                        (require 'nl.zeekat.data.sub.humane-test-output)
                        (nl.zeekat.data.sub.humane-test-output/activate!)]}
+## Changes
+
+ - 0.1.4
+
+    Fixes for the humane-test-output diffs, added a few tests.
+

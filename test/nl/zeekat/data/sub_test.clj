@@ -45,5 +45,6 @@
       (= [nil nil nil] (subdiff nil [:a :b :c]))
       (= [[nil :b] nil [:a]] (subdiff [:a :b] [:a]))
       (= [[[nil :b] :c] [[nil 1] 2] [[:a]]]  (subdiff [[:a :b] :c] [[:a 1] 2]))
-      (= [{:a [nil :c]} {:a [nil 2]} {:a [:b]}] (subdiff {:a [:b :c]} {:a [:b 2]})))))
+      (= [{:a [nil :c]} {:a [nil 2]} {:a [:b]}] (subdiff {:a [:b :c]} {:a [:b 2]}))
+      (= [[nil {:a 1}] [nil {:a 2}] [0 {:b 3}]] (subdiff [0 {:a 1 :b 3}] [0 {:a 2 :b 3}])))))
 
